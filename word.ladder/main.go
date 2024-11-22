@@ -22,30 +22,25 @@ func ladderLength(beginWord string, endWord string, wordList []string) int {
 		e := q[0]
 		currWord, currlen := e.tf, e.l
 		q = q[1:]
+
 		if currWord == endWord {
 			return currlen
 		}
 
-		for i := 0; i < len(currWord); i++ {
-			var newTf string
+		n := len(currWord)
+		for i := 0; i < n; i++ {
+			var nWord string
 			for ch := 'a'; ch <= 'z'; ch++ {
-				var replace string
-				if currWord[i] != byte(ch) {
-					replace = string(ch)
+				if i == 0 {
+					nWord = string(ch) + currWord[i+1:]
+				} else if i == n-1 {
+					nWord = currWord[:n-1] + string(ch)
+				} else {
+					nWord = currWord[:i] + string(ch) + currWord[i+1:]
 				}
-
-				if replace != "" {
-					if i == 0 {
-						newTf = replace + currWord[i+1:]
-					} else if i == len(currWord)-1 {
-						newTf = currWord[:len(currWord)-1] + replace
-					} else {
-						newTf = currWord[:i] + replace + currWord[i+1:]
-					}
-					if wordsMap[newTf] {
-						q = append(q, pair{newTf, currlen + 1})
-						wordsMap[newTf] = false
-					}
+				if wordsMap[nWord] {
+					q = append(q, pair{nWord, currlen + 1})
+					wordsMap[nWord] = false
 				}
 			}
 		}

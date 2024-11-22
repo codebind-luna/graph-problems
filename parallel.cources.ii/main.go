@@ -1,6 +1,6 @@
 package main
 
-func minimumSemesters(n int, relations [][]int) int {
+func minNumberOfSemesters(n int, relations [][]int, k int) int {
 	indegree := make([]int, n+1)
 	adjList := make([][]int, n+1)
 
@@ -20,12 +20,12 @@ func minimumSemesters(n int, relations [][]int) int {
 		return -1
 	}
 
-	res, total := 0, 0
+	sem := 0
 
 	for len(q) > 0 {
 		n := len(q)
-		total += n
-		res += 1
+		n = min(n, k)
+		sem++
 
 		for i := 0; i < n; i++ {
 			c := q[0]
@@ -40,9 +40,5 @@ func minimumSemesters(n int, relations [][]int) int {
 		}
 	}
 
-	if total != n {
-		return -1
-	}
-
-	return res
+	return sem
 }

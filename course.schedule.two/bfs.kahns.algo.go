@@ -11,9 +11,12 @@ func findOrderBFS(numCourses int, prerequisites [][]int) []int {
 	}
 
 	var q []int
+	visited := make([]bool, numCourses)
+
 	for i := 0; i < numCourses; i++ {
 		if inDegree[i] == 0 {
 			q = append(q, i)
+			visited[i] = true
 		}
 	}
 
@@ -24,9 +27,14 @@ func findOrderBFS(numCourses int, prerequisites [][]int) []int {
 		result = append(result, course)
 
 		for _, nei := range adjacencyList[course] {
-			inDegree[nei]--
-			if inDegree[nei] == 0 {
-				q = append(q, nei)
+			if !visited[nei] {
+				inDegree[nei]--
+				if inDegree[nei] == 0 {
+					if !visited[nei] {
+						q = append(q, nei)
+						visited[nei] = true
+					}
+				}
 			}
 		}
 	}

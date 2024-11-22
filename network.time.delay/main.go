@@ -1,57 +1,99 @@
 package main
 
-// type Pair struct {
-// 	Key, Value int
-// }
+import (
+	"container/heap"
+	"math"
+)
 
-// func networkDelayTime(times [][]int, n, k int) int {
-// 	// Adjacency list
-// 	adj := make(map[int][]Pair)
+type MinHeap [][2]int
 
-// 	for _, time := range times {
-// 		source, dest, travelTime := time[0], time[1], time[2]
-// 		adj[source] = append(adj[source], Pair{travelTime, dest})
-// 	}
+func (h MinHeap) Len() int {
+	return len(h)
+}
 
-// 	visited := make([]bool, n+1)
+func (h MinHeap) Less(i, j int) bool {
+	return h[i][1] < h[j][1]
+}
 
-// 	maxT := BFS(visited, k, adj)
+func (h MinHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
 
-// 	for i := 1; i <= n; i++ {
-// 		if !visited[i] {
-// 			return -1
-// 		}
-// 	}
+func (h *MinHeap) Push(x interface{}) {
+	*h = append(*h, x.([2]int))
+}
 
-// 	return maxT
-// }
+func (h *MinHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[:n-1]
+	return x
+}
 
-// func BFS(visited []bool, sourceNode int, adj map[int][]Pair) int {
-// 	var queue [][2]int
-// 	queue = append(queue, [2]int{sourceNode, 0})
-// 	visited[sourceNode] = true
+type Pair struct {
+	node, dist int
+}
 
-// 	maxTime := 0
-// 	for len(queue) > 0 {
-// 		currNode := queue[0]
-// 		queue = queue[1:]
-// 		maxTime = max(maxTime, currNode[1])
-// 		// Broadcast the signal to adjacent nodes
-// 		for _, edge := range adj[currNode[0]] {
-// 			time, neighborNode := edge.Key, edge.Value
-// 			arrivalTime := currNode[1] + time
-// 			if !visited[neighborNode] {
-// 				visited[neighborNode] = true
-// 				queue = append(queue, [2]int{neighborNode, arrivalTime})
-// 			}
-// 		}
-// 	}
-// 	return maxTime
-// }
+func networkDelayTime(times [][]int, n, k int) int {
+	adj := make(map[int][]Pair)
 
-// func max(a, b int) int {
-// 	if a > b {
-// 		return a
-// 	}
-// 	return b
-// }
+	for _, time := range times {
+		source, dest, travelTime := time[0], time[1], time[2]
+		adj[source] = append(adj[source], Pair{dest, travelTime})
+	}
+
+	dist := make([]int, n+1)
+
+	for i := 0; i < n+1; i++ {
+		if i != 0 {
+			dist[i] = math.MaxInt
+		}
+	}
+
+	var h MinHeap
+	heap.Init(&h)
+
+	heap.Push(&h, [2]int{k, 0})
+	dist[k] = 0
+
+	for len(h) > 0 {
+		v := heap.Pop(&h).([2]int)
+		n := v[0]
+		d := v[1]
+
+		if d > dist[n] {
+			continue
+		}
+
+		for _, en := range adj[n] {
+			nei := en.node
+			di := en.dist
+
+			newD := di + d
+
+			if newD < dist[nei] {
+				heap.Push(&h, [2]int{nei, newD})
+				dist[nei] = newD
+			}
+		}
+	}
+
+	minTime := math.MaxInt
+
+	for j := 1; j < n+1; j++ {
+		minTime = max(dist[j], minTime)
+	}
+
+	if minTime == math.MaxInt {
+		return -1
+	}
+	return minTime
+}
+
+func max(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
