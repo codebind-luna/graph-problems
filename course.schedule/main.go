@@ -1,50 +1,37 @@
+
 package main
 
-func dfs(n int, visited []bool, adj map[int][]int, s *[]int) {
-	if visited[n] {
-		return
-	}
-	visited[n] = true
-
-	for _, nei := range adj[n] {
-		if !visited[nei] {
-			dfs(nei, visited, adj, s)
-		}
-	}
-	*s = append(*s, n)
-}
-
 func canFinish(numCourses int, prerequisites [][]int) bool {
-	adj := make(map[int][]int)
-	for _, pr := range prerequisites {
-		adj[pr[1]] = append(adj[pr[1]], pr[0])
+	adjacencyList := make(map[int][]int)
+	inDegree := make(map[int]int)
+
+	for _, p := range prerequisites {
+		adjacencyList[p[1]] = append(adjacencyList[p[1]], p[0])
+		inDegree[p[0]]++
 	}
 
-	var s []int
-	visited := make([]bool, numCourses)
+	q := []int{}
 
 	for i := 0; i < numCourses; i++ {
-		if !visited[i] {
-			dfs(i, visited, adj, &s)
+		if inDegree[i] == 0 {
+			q = append(q, i)
 		}
 	}
 
-	idx := 0
-	m := make(map[int]int)
+	finished := 0
 
-	for len(s) > 0 {
-		node := s[len(s)-1]
-		s = s[:len(s)-1]
-		m[node] = idx
-		idx++
-	}
+	for len(q) > 0 {
+		c := q[len(q)-1]
+		q = q[:len(q)-1]
 
-	for i := 0; i < numCourses; i++ {
-		for _, nei := range adj[i] {
-			if m[i] >= m[nei] {
-				return false
+		finished++
+
+		for _, n := range adjacencyList[c] {
+			inDegree[n]--
+			if inDegree[n] == 0 {
+				q = append(q, n)
 			}
 		}
 	}
-	return true
+	return finished == numCourses
 }

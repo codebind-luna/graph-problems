@@ -1,59 +1,40 @@
 package main
 
-func dfs(node int, visited map[int]bool, adjacencyList map[int][]int, stack *[]int) {
-	if visited[node] {
-		return
-	}
-
-	visited[node] = true
-
-	for _, v := range adjacencyList[node] {
-		if !visited[v] {
-			dfs(v, visited, adjacencyList, stack)
-		}
-	}
-
-	*stack = append(*stack, node)
-}
-
 func findOrder(numCourses int, prerequisites [][]int) []int {
-	adjacencyList := map[int][]int{}
-	stack := []int{}
-	visited := map[int]bool{}
+	inDegree := make([]int, numCourses)
 
-	for _, v := range prerequisites {
-		adjacencyList[v[1]] = append(adjacencyList[v[1]], v[0])
+	adjacencyList := make(map[int][]int)
+
+	for i := range prerequisites {
+		adjacencyList[prerequisites[i][1]] = append(adjacencyList[prerequisites[i][1]], prerequisites[i][0])
+		inDegree[prerequisites[i][0]]++
 	}
 
+	var q []int
 	for i := 0; i < numCourses; i++ {
-		if !visited[i] {
-			dfs(i, visited, adjacencyList, &stack)
+		if inDegree[i] == 0 {
+			q = append(q, i)
 		}
 	}
 
-	var order []int
+	var result []int
+	for len(q) > 0 {
+		course := q[0]
+		q = q[1:]
+		result = append(result, course)
 
-	position := map[int]int{}
-	indx := 0
-
-	for len(stack) > 0 {
-		course := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-		order = append(order, course)
-		position[course] = indx
-		indx++
-	}
-
-	for i := 0; i < numCourses; i++ {
-		for _, v := range adjacencyList[i] {
-			// If parent vertex
-			// does not appear first
-			// 5 => [5] for self dependency also cycle exists.
-			if position[i] >= position[v] {
-				return []int{}
+		for _, nei := range adjacencyList[course] {
+			inDegree[nei]--
+			if inDegree[nei] == 0 {
+				q = append(q, nei)
 			}
 		}
+
 	}
 
-	return order
+	if len(result) == numCourses {
+		return result
+	}
+
+	return []int{}
 }
